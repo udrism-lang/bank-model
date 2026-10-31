@@ -1,0 +1,182 @@
+# Assumptions for a deposit-funded digital consumer lender ("Bank X").
+# All amounts in EUR millions; rates as decimals (0.11 = 11%).
+# Each assumption has a value per scenario. Change values here, then run: python run.py
+
+years: 5
+
+scenarios:
+  base:
+    label: Base
+  optimistic:
+    label: Optimistic
+  stress:
+    label: Stress
+
+assumptions:
+  initial_capital:
+    description: Paid-in capital at start of year 1
+    unit: EUR m
+    source: Licence capital plan; digital banks typically need EUR 20-50m in practice
+    base: 30
+    optimistic: 30
+    stress: 30
+
+  capital_injection_year3:
+    description: Additional capital injected in year 3
+    unit: EUR m
+    source: Set this to test how much capital closes the shortfall
+    base: 0
+    optimistic: 0
+    stress: 0
+
+  originations:
+    description: New loans originated per year (years 1-5)
+    unit: EUR m
+    source: Origination plan; slow start while models and systems are proven
+    base: [15, 40, 70, 100, 130]
+    optimistic: [18, 50, 85, 120, 155]
+    stress: [12, 30, 50, 70, 90]
+
+  loan_yield:
+    description: Interest rate earned on loans
+    unit: "%/yr"
+    source: Inbank 2025 portfolio yield ~11.1% (Q3 2025 interim report)
+    base: 0.11
+    optimistic: 0.115
+    stress: 0.105
+
+  repayment_rate_opening:
+    description: Share of opening balance repaid during the year
+    unit: "%/yr"
+    source: ~3-year average maturity of personal loans
+    base: 0.33
+    optimistic: 0.33
+    stress: 0.33
+
+  repayment_rate_new:
+    description: Share of same-year originations repaid within the year
+    unit: "%"
+    source: Loans originated evenly through the year
+    base: 0.15
+    optimistic: 0.15
+    stress: 0.15
+
+  cost_of_risk:
+    description: Annual credit losses as share of average portfolio
+    unit: "%/yr"
+    source: Inbank 2025 1.59%; unsecured consumer credit typically 1.5-4%
+    base: 0.02
+    optimistic: 0.015
+    stress: 0.04
+
+  day1_provision:
+    description: Upfront provision on new loans (IFRS 9 stage 1)
+    unit: "% of originations"
+    source: 12-month expected loss booked at origination
+    base: 0.01
+    optimistic: 0.008
+    stress: 0.015
+
+  deposit_rate:
+    description: Interest paid on customer deposits
+    unit: "%/yr"
+    source: ECB deposit facility rate 2.50% (from 16 Sep 2026) plus competitive premium
+    base: 0.026
+    optimistic: 0.024
+    stress: 0.032
+
+  liquidity_ratio:
+    description: Liquidity buffer as share of deposits
+    unit: "% of deposits"
+    source: Supervisors expect a large buffer from new banks
+    base: 0.25
+    optimistic: 0.20
+    stress: 0.30
+
+  liquidity_yield:
+    description: Return on liquidity (central bank, government bonds)
+    unit: "%/yr"
+    source: Slightly below ECB deposit facility rate
+    base: 0.023
+    optimistic: 0.025
+    stress: 0.020
+
+  fee_rate:
+    description: Net fee income as share of average portfolio
+    unit: "%/yr"
+    source: Card, account and loan fees
+    base: 0.010
+    optimistic: 0.012
+    stress: 0.008
+
+  fixed_opex:
+    description: Fixed operating costs per year (years 1-5)
+    unit: EUR m
+    source: Team of ~25-30, IT, licences, audit
+    base: [3.5, 4.0, 4.5, 5.0, 5.5]
+    optimistic: [3.5, 4.0, 4.5, 5.0, 5.5]
+    stress: [3.9, 4.4, 5.0, 5.5, 6.1]
+
+  cac_rate:
+    description: Customer acquisition cost as share of originations
+    unit: "% of originations"
+    source: EUR 125 per EUR 5,000 loan
+    base: 0.025
+    optimistic: 0.02
+    stress: 0.035
+
+  servicing_rate:
+    description: Servicing cost as share of average portfolio
+    unit: "%/yr"
+    source: IT, support, collections
+    base: 0.008
+    optimistic: 0.007
+    stress: 0.010
+
+  other_assets:
+    description: Fixed and other assets (IT, equipment)
+    unit: EUR m
+    source: Simplified constant
+    base: 4
+    optimistic: 4
+    stress: 4
+
+  tax_rate:
+    description: Tax rate on profit after loss carry-forward
+    unit: "%"
+    source: Simplified assumption
+    base: 0.20
+    optimistic: 0.20
+    stress: 0.20
+
+  risk_weight_loans:
+    description: Risk weight for retail consumer loans
+    unit: "%"
+    source: CRR standardised approach, retail exposures
+    base: 0.75
+    optimistic: 0.75
+    stress: 0.75
+
+  op_risk_multiplier:
+    description: Operational risk RWA as multiple of total income
+    unit: x
+    source: CRR3 business indicator component 12% x 12.5
+    base: 1.5
+    optimistic: 1.5
+    stress: 1.5
+
+  capital_requirement:
+    description: Total capital requirement incl. buffers, % of RWA
+    unit: "% of RWA"
+    source: Pillar 1 8% + Pillar 2 requirement + combined buffers
+    base: 0.15
+    optimistic: 0.15
+    stress: 0.15
+
+  management_buffer:
+    description: Internal buffer above requirement
+    unit: "% of RWA"
+    source: Management target
+    base: 0.02
+    optimistic: 0.02
+    stress: 0.02
