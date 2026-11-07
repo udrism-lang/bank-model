@@ -8,6 +8,8 @@ A transparent, scenario-based model of a **new deposit-funded digital bank** tha
 
 The model runs three scenarios (base, optimistic, stress), checks its own accounting identities with tests, and produces an Excel report, charts and a sensitivity analysis from a single command.
 
+Companion projects: [bank-jurisdiction-compare](https://github.com/udrism-lang/bank-jurisdiction-compare) asks where this bank could be licensed, and [neobank-benchmarks](https://github.com/udrism-lang/neobank-benchmarks) compares it with real banks.
+
 ## Key findings
 
 | | Base | Optimistic | Stress |
