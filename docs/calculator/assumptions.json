@@ -1,0 +1,213 @@
+{
+  "generated_from": "assumptions.yaml by tools/export_web_assumptions.py (do not edit by hand)",
+  "years": 5,
+  "scenarios": {
+    "base": {
+      "label": "Base",
+      "inputs": {
+        "initial_capital": 30,
+        "capital_injection_year3": 0,
+        "originations": [
+          15,
+          40,
+          70,
+          100,
+          130
+        ],
+        "loan_yield": 0.11,
+        "repayment_rate_opening": 0.33,
+        "repayment_rate_new": 0.15,
+        "cost_of_risk": 0.02,
+        "allowance_coverage": 0.01,
+        "deposit_rate": 0.026,
+        "liquidity_ratio": 0.25,
+        "liquidity_yield": 0.023,
+        "fee_rate": 0.01,
+        "fixed_opex": [
+          3.5,
+          4.0,
+          4.5,
+          5.0,
+          5.5
+        ],
+        "cac_rate": 0.025,
+        "servicing_rate": 0.008,
+        "other_assets": 4,
+        "tax_rate": 0.2,
+        "risk_weight_loans": 0.75,
+        "op_risk_bic_coefficient": 0.12,
+        "op_risk_ildc_cap": 0.0225,
+        "capital_requirement": 0.15,
+        "management_buffer": 0.02
+      }
+    },
+    "optimistic": {
+      "label": "Optimistic",
+      "inputs": {
+        "initial_capital": 30,
+        "capital_injection_year3": 0,
+        "originations": [
+          18,
+          50,
+          85,
+          120,
+          155
+        ],
+        "loan_yield": 0.115,
+        "repayment_rate_opening": 0.33,
+        "repayment_rate_new": 0.15,
+        "cost_of_risk": 0.015,
+        "allowance_coverage": 0.008,
+        "deposit_rate": 0.024,
+        "liquidity_ratio": 0.2,
+        "liquidity_yield": 0.025,
+        "fee_rate": 0.012,
+        "fixed_opex": [
+          3.5,
+          4.0,
+          4.5,
+          5.0,
+          5.5
+        ],
+        "cac_rate": 0.02,
+        "servicing_rate": 0.007,
+        "other_assets": 4,
+        "tax_rate": 0.2,
+        "risk_weight_loans": 0.75,
+        "op_risk_bic_coefficient": 0.12,
+        "op_risk_ildc_cap": 0.0225,
+        "capital_requirement": 0.15,
+        "management_buffer": 0.02
+      }
+    },
+    "stress": {
+      "label": "Stress",
+      "inputs": {
+        "initial_capital": 30,
+        "capital_injection_year3": 0,
+        "originations": [
+          12,
+          30,
+          50,
+          70,
+          90
+        ],
+        "loan_yield": 0.105,
+        "repayment_rate_opening": 0.33,
+        "repayment_rate_new": 0.15,
+        "cost_of_risk": 0.04,
+        "allowance_coverage": 0.015,
+        "deposit_rate": 0.032,
+        "liquidity_ratio": 0.3,
+        "liquidity_yield": 0.02,
+        "fee_rate": 0.008,
+        "fixed_opex": [
+          3.9,
+          4.4,
+          5.0,
+          5.5,
+          6.1
+        ],
+        "cac_rate": 0.035,
+        "servicing_rate": 0.01,
+        "other_assets": 4,
+        "tax_rate": 0.2,
+        "risk_weight_loans": 0.75,
+        "op_risk_bic_coefficient": 0.12,
+        "op_risk_ildc_cap": 0.0225,
+        "capital_requirement": 0.15,
+        "management_buffer": 0.02
+      }
+    }
+  },
+  "descriptions": {
+    "initial_capital": {
+      "description": "Paid-in capital at start of year 1",
+      "unit": "EUR m"
+    },
+    "capital_injection_year3": {
+      "description": "Additional capital injected in year 3",
+      "unit": "EUR m"
+    },
+    "originations": {
+      "description": "New loans originated per year (years 1-5)",
+      "unit": "EUR m"
+    },
+    "loan_yield": {
+      "description": "Interest rate earned on loans",
+      "unit": "%/yr"
+    },
+    "repayment_rate_opening": {
+      "description": "Share of opening balance repaid during the year",
+      "unit": "%/yr"
+    },
+    "repayment_rate_new": {
+      "description": "Share of same-year originations repaid within the year",
+      "unit": "%"
+    },
+    "cost_of_risk": {
+      "description": "Write-offs (realised credit losses) as share of average gross loans",
+      "unit": "%/yr"
+    },
+    "allowance_coverage": {
+      "description": "IFRS 9 loss allowance as share of closing gross loans",
+      "unit": "% of gross loans"
+    },
+    "deposit_rate": {
+      "description": "Interest paid on customer deposits",
+      "unit": "%/yr"
+    },
+    "liquidity_ratio": {
+      "description": "Liquidity buffer as share of deposits",
+      "unit": "% of deposits"
+    },
+    "liquidity_yield": {
+      "description": "Return on liquidity (central bank, government bonds)",
+      "unit": "%/yr"
+    },
+    "fee_rate": {
+      "description": "Net fee income as share of average portfolio",
+      "unit": "%/yr"
+    },
+    "fixed_opex": {
+      "description": "Fixed operating costs per year (years 1-5)",
+      "unit": "EUR m"
+    },
+    "cac_rate": {
+      "description": "Customer acquisition cost as share of originations",
+      "unit": "% of originations"
+    },
+    "servicing_rate": {
+      "description": "Servicing cost as share of average portfolio",
+      "unit": "%/yr"
+    },
+    "other_assets": {
+      "description": "Other tangible assets (equipment, receivables), 100% risk weight",
+      "unit": "EUR m"
+    },
+    "tax_rate": {
+      "description": "Tax rate on profit after loss carry-forward",
+      "unit": "%"
+    },
+    "risk_weight_loans": {
+      "description": "Risk weight for retail consumer loans",
+      "unit": "%"
+    },
+    "op_risk_bic_coefficient": {
+      "description": "Business indicator component coefficient (BI up to EUR 1bn)",
+      "unit": "% of BI"
+    },
+    "op_risk_ildc_cap": {
+      "description": "Cap on net interest in the ILDC, as share of interest-earning assets",
+      "unit": "% of interest-earning assets"
+    },
+    "capital_requirement": {
+      "description": "Total capital requirement incl. buffers, % of RWA",
+      "unit": "% of RWA"
+    },
+    "management_buffer": {
+      "description": "Internal buffer above requirement",
+      "unit": "% of RWA"
+    }
+  }
+}

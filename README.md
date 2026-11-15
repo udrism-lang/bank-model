@@ -8,6 +8,8 @@ A transparent, scenario-based model of a **new digital bank** that offers saving
 
 The model runs three scenarios (base, optimistic, stress), has tests for its roll-forwards and liquidity, and produces an Excel report, charts and a sensitivity analysis from a single command.
 
+**Try it:** [interactive calculator](https://udrism-lang.github.io/bank-model/calculator/). Move the drivers and see break-even, ROE and capital change; it runs the same calculations as the Python model.
+
 Companion projects: [bank-jurisdiction-compare](https://github.com/udrism-lang/bank-jurisdiction-compare) asks where this bank could be licensed, and [neobank-benchmarks](https://github.com/udrism-lang/neobank-benchmarks) compares it with real banks.
 
 ## Key findings
@@ -89,6 +91,8 @@ bankmodel/report.py     Excel, charts, markdown summary
 run.py                  command-line entry point
 tests/test_model.py     roll-forwards, credit-loss and op-risk logic, reference values
 docs/                   charts used in this README (copied from output/)
+docs/calculator/        interactive calculator (index.html, model.js, assumptions.json)
+tools/export_web_assumptions.py  writes the calculator's assumptions from assumptions.yaml
 ```
 
 ## Tests
@@ -104,6 +108,13 @@ The tests check that the model is internally consistent, not just that it runs:
 - key outputs match reference values from the current model (a regression check).
 
 The balance sheet balances by construction, because liquidity is the balancing item. A test checks it, but it only catches coding slips. The real checks are that liquidity stays positive and that the roll-forwards hold.
+
+### Calculator parity with Python
+
+The calculator runs in the browser, so the model is ported line by line to JavaScript in [`docs/calculator/model.js`](docs/calculator/model.js). `bankmodel/model.py` stays the source of truth, and two test files stop the two from drifting apart:
+
+- `tests/test_web_parity.py` runs `model.js` under Node for the three scenarios and twelve changed input sets (higher write-offs, lower yield, more or less capital, a year-3 capital injection, dearer funding, scaled origination and cost plans, and cases where the deposit floor and the 2.25% ILDC cap bind). Every yearly field and every summary value must match Python within 1e-9 relative; in practice they match exactly. The test is skipped if `node` is not installed.
+- `tests/test_web_assumptions.py` checks that `docs/calculator/assumptions.json` and the fallback copy inside `index.html` (used when the page is opened from disk) match `assumptions.yaml`. After changing the YAML, run `python tools/export_web_assumptions.py`.
 
 ## Simplifications
 

@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Digital Lender Calculator</title>
+<meta name="description" content="Interactive calculator for a five-year model of a new digital consumer lender: move the drivers and see profit, ROE and capital change. Same calculations as the Python model.">
+<style>
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #dde1e7;
+  --text: #16202c;
+  --muted: #5b6675;
+  --accent: #1f5fbf;
+  --accent-soft: #e5eefb;
+  --good: #137a43;
+  --good-soft: #e3f4ea;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --series-1: #1f5fbf;
+  --series-2: #0f8a7e;
+  --series-base: #8a94a3;
+  --line-req: #b42318;
+  --line-target: #b26a00;
+  --grid: #e7eaef;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .06);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141b;
+    --surface: #171d26;
+    --surface-2: #1e2631;
+    --border: #2c3644;
+    --text: #e6eaf0;
+    --muted: #9aa5b4;
+    --accent: #6ea2f2;
+    --accent-soft: #1c2b44;
+    --good: #4cc38a;
+    --good-soft: #15301f;
+    --bad: #f97066;
+    --bad-soft: #3a1a18;
+    --series-1: #6ea2f2;
+    --series-2: #3cc4b4;
+    --series-base: #7b8595;
+    --line-req: #f97066;
+    --line-target: #f0b44c;
+    --grid: #263040;
+    --shadow: none;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #171d26; --surface-2: #1e2631; --border: #2c3644; --text: #e6eaf0;
+  --muted: #9aa5b4; --accent: #6ea2f2; --accent-soft: #1c2b44; --good: #4cc38a; --good-soft: #15301f;
+  --bad: #f97066; --bad-soft: #3a1a18; --series-1: #6ea2f2; --series-2: #3cc4b4; --series-base: #7b8595;
+  --line-req: #f97066; --line-target: #f0b44c; --grid: #263040; --shadow: none; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+a { color: var(--accent); }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 20px 16px 32px; }
+header h1 { font-size: 1.45rem; margin: 0 0 4px; letter-spacing: -.01em; }
+header p { margin: 0; color: var(--muted); max-width: 70ch; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0 18px; }
+.toolbar .label { color: var(--muted); font-size: .85rem; margin-right: 4px; }
+button {
+  font: inherit; font-size: .9rem; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  padding: 7px 14px; border-radius: 8px;
+}
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] button[aria-pressed="true"] { color: #0f141b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) button[aria-pressed="true"] { color: #0f141b; } }
+#state-note { color: var(--muted); font-size: .85rem; margin-left: auto; }
+.layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 920px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px; box-shadow: var(--shadow); min-width: 0;
+}
+.card h2 { font-size: 1rem; margin: 0 0 12px; }
+.card h2 .sub { font-weight: 400; color: var(--muted); font-size: .85rem; }
+aside .card + .card { margin-top: 18px; }
+.slider { margin-bottom: 14px; }
+.slider:last-child { margin-bottom: 0; }
+.slider .row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.slider label { font-size: .88rem; }
+.slider output { font-weight: 600; font-size: .9rem; white-space: nowrap; }
+.slider .hint { color: var(--muted); font-size: .76rem; }
+.slider .changed { color: var(--accent); }
+input[type="range"] { width: 100%; margin: 6px 0 0; accent-color: var(--accent); }
+.group-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 8px; }
+.group-title:first-of-type { margin-top: 0; }
+.targets .field { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+.targets .field label { font-size: .88rem; }
+.targets input, .targets select {
+  font: inherit; width: 92px; padding: 5px 8px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text); text-align: right;
+}
+.targets .note { color: var(--muted); font-size: .78rem; margin: 6px 0 0; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 178px), 1fr)); gap: 12px; margin-bottom: 18px; }
+.kpi {
+  background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--border);
+  border-radius: 10px; padding: 12px 12px 10px; min-width: 0; box-shadow: var(--shadow);
+}
+.kpi .name { font-size: .8rem; color: var(--muted); }
+.kpi .value { font-size: 1.45rem; font-weight: 650; margin: 2px 0; letter-spacing: -.01em; }
+.kpi .delta { font-size: .78rem; color: var(--muted); }
+.kpi .status { font-size: .78rem; margin-top: 6px; font-weight: 600; }
+.kpi.good, .chart-card.good { border-left-color: var(--good); }
+.kpi.bad, .chart-card.bad { border-left-color: var(--bad); }
+.kpi.good .status, .chart-card.good .status { color: var(--good); }
+.kpi.bad .status, .chart-card.bad .status { color: var(--bad); }
+.kpi.bad { background: linear-gradient(0deg, var(--bad-soft), var(--bad-soft)), var(--surface); }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 14px; margin-bottom: 18px; }
+.chart-card { border-left: 4px solid var(--border); }
+.chart-card .status { font-size: .8rem; font-weight: 600; margin: -6px 0 8px; min-height: 1.2em; }
+.chart-box { position: relative; height: 240px; }
+.chart-card.wide { grid-column: 1 / -1; }
+.chart-note { color: var(--muted); font-size: .78rem; margin: 6px 0 0; min-height: 1em; }
+.chart-fallback { color: var(--muted); font-size: .85rem; display: none; }
+.no-charts .chart-box { display: none; }
+.no-charts .chart-fallback { display: block; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; font-size: .86rem; min-width: 520px; }
+th, td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { color: var(--muted); font-weight: 600; font-size: .8rem; }
+tbody tr.section td { font-weight: 600; background: var(--surface-2); }
+td.miss { color: var(--bad); font-weight: 600; }
+.table-note { color: var(--muted); font-size: .78rem; margin: 8px 0 0; }
+footer { margin-top: 26px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--border); padding-top: 14px; }
+footer p { margin: 4px 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
+#load-error { display: none; background: var(--bad-soft); color: var(--bad); padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>New digital lender: five-year calculator</h1>
+    <p>Move the drivers and watch break-even, return on equity and capital change. The numbers come from the same calculations as the Python model in the repository, tested to match.</p>
+  </header>
+
+  <div class="toolbar" role="group" aria-label="Scenario">
+    <span class="label">Scenario</span>
+    <button type="button" data-scenario="base" aria-pressed="true">Base</button>
+    <button type="button" data-scenario="optimistic" aria-pressed="false">Optimistic</button>
+    <button type="button" data-scenario="stress" aria-pressed="false">Stress</button>
+    <button type="button" id="reset">Reset</button>
+    <span id="state-note" aria-live="polite"></span>
+  </div>
+
+  <div id="load-error" role="alert"></div>
+
+  <div class="layout">
+    <aside>
+      <section class="card" aria-labelledby="drivers-h">
+        <h2 id="drivers-h">Drivers <span class="sub">EUR millions, rates per year</span></h2>
+        <div id="sliders"></div>
+      </section>
+      <section class="card targets" aria-labelledby="targets-h">
+        <h2 id="targets-h">Targets</h2>
+        <div class="field">
+          <label for="t-capital">Capital ratio, every year, at least (%)</label>
+          <input id="t-capital" type="number" min="0" max="50" step="0.5" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="t-roe">ROE in year 5, at least (%)</label>
+          <input id="t-roe" type="number" min="-100" max="100" step="0.5" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="t-profit">First profitable year, no later than</label>
+          <select id="t-profit">
+            <option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option>
+            <option value="4">Year 4</option><option value="5">Year 5</option>
+          </select>
+        </div>
+        <p class="note" id="t-capital-note"></p>
+      </section>
+    </aside>
+
+    <main>
+      <section aria-labelledby="kpi-h">
+        <h2 id="kpi-h" class="sr-only">Key results</h2>
+        <div class="kpis" id="kpis"></div>
+      </section>
+
+      <section class="charts" id="charts" aria-label="Charts">
+        <div class="card chart-card" id="card-profit">
+          <h2>Net profit by year <span class="sub">EUR m</span></h2>
+          <p class="status" id="status-profit"></p>
+          <div class="chart-box"><canvas id="chart-profit" role="img" aria-label="Bar chart of net profit by year"></canvas></div>
+          <p class="chart-fallback">Charts need Chart.js from cdnjs; the table below has the same numbers.</p>
+        </div>
+        <div class="card chart-card" id="card-capital">
+          <h2>Capital ratio by year <span class="sub">% of RWA</span></h2>
+          <p class="status" id="status-capital"></p>
+          <div class="chart-box"><canvas id="chart-capital" role="img" aria-label="Line chart of capital ratio by year with requirement and target lines"></canvas></div>
+          <p class="chart-note" id="note-capital"></p>
+          <p class="chart-fallback">Charts need Chart.js from cdnjs; the table below has the same numbers.</p>
+        </div>
+        <div class="card chart-card wide" id="card-balance">
+          <h2>Net loan book and deposits <span class="sub">EUR m, year end</span></h2>
+          <p class="status"></p>
+          <div class="chart-box"><canvas id="chart-balance" role="img" aria-label="Bar chart of net loan book and deposits by year"></canvas></div>
+          <p class="chart-fallback">Charts need Chart.js from cdnjs; the table below has the same numbers.</p>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="table-h">
+        <h2 id="table-h">Year by year <span class="sub">EUR m unless stated</span></h2>
+        <div class="table-wrap"><table id="table"></table></div>
+        <p class="table-note" id="table-note"></p>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <p>Learning model with simplifications (see <a href="https://github.com/udrism-lang/bank-model#simplifications">README</a>). Not investment advice.</p>
+    <p>Source code, assumptions and tests: <a href="https://github.com/udrism-lang/bank-model">github.com/udrism-lang/bank-model</a></p>
+  </footer>
+</div>
+
+<!-- Fallback copy of assumptions.json for pages opened from disk (file://), where fetch() is blocked.
+     Generated by tools/export_web_assumptions.py; tests/test_web_assumptions.py checks it matches the YAML. -->
+<script type="application/json" id="assumptions-fallback">{"generated_from":"assumptions.yaml by tools/export_web_assumptions.py (do not edit by hand)","years":5,"scenarios":{"base":{"label":"Base","inputs":{"initial_capital":30,"capital_injection_year3":0,"originations":[15,40,70,100,130],"loan_yield":0.11,"repayment_rate_opening":0.33,"repayment_rate_new":0.15,"cost_of_risk":0.02,"allowance_coverage":0.01,"deposit_rate":0.026,"liquidity_ratio":0.25,"liquidity_yield":0.023,"fee_rate":0.01,"fixed_opex":[3.5,4.0,4.5,5.0,5.5],"cac_rate":0.025,"servicing_rate":0.008,"other_assets":4,"tax_rate":0.2,"risk_weight_loans":0.75,"op_risk_bic_coefficient":0.12,"op_risk_ildc_cap":0.0225,"capital_requirement":0.15,"management_buffer":0.02}},"optimistic":{"label":"Optimistic","inputs":{"initial_capital":30,"capital_injection_year3":0,"originations":[18,50,85,120,155],"loan_yield":0.115,"repayment_rate_opening":0.33,"repayment_rate_new":0.15,"cost_of_risk":0.015,"allowance_coverage":0.008,"deposit_rate":0.024,"liquidity_ratio":0.2,"liquidity_yield":0.025,"fee_rate":0.012,"fixed_opex":[3.5,4.0,4.5,5.0,5.5],"cac_rate":0.02,"servicing_rate":0.007,"other_assets":4,"tax_rate":0.2,"risk_weight_loans":0.75,"op_risk_bic_coefficient":0.12,"op_risk_ildc_cap":0.0225,"capital_requirement":0.15,"management_buffer":0.02}},"stress":{"label":"Stress","inputs":{"initial_capital":30,"capital_injection_year3":0,"originations":[12,30,50,70,90],"loan_yield":0.105,"repayment_rate_opening":0.33,"repayment_rate_new":0.15,"cost_of_risk":0.04,"allowance_coverage":0.015,"deposit_rate":0.032,"liquidity_ratio":0.3,"liquidity_yield":0.02,"fee_rate":0.008,"fixed_opex":[3.9,4.4,5.0,5.5,6.1],"cac_rate":0.035,"servicing_rate":0.01,"other_assets":4,"tax_rate":0.2,"risk_weight_loans":0.75,"op_risk_bic_coefficient":0.12,"op_risk_ildc_cap":0.0225,"capital_requirement":0.15,"management_buffer":0.02}}},"descriptions":{"initial_capital":{"description":"Paid-in capital at start of year 1","unit":"EUR m"},"capital_injection_year3":{"description":"Additional capital injected in year 3","unit":"EUR m"},"originations":{"description":"New loans originated per year (years 1-5)","unit":"EUR m"},"loan_yield":{"description":"Interest rate earned on loans","unit":"%/yr"},"repayment_rate_opening":{"description":"Share of opening balance repaid during the year","unit":"%/yr"},"repayment_rate_new":{"description":"Share of same-year originations repaid within the year","unit":"%"},"cost_of_risk":{"description":"Write-offs (realised credit losses) as share of average gross loans","unit":"%/yr"},"allowance_coverage":{"description":"IFRS 9 loss allowance as share of closing gross loans","unit":"% of gross loans"},"deposit_rate":{"description":"Interest paid on customer deposits","unit":"%/yr"},"liquidity_ratio":{"description":"Liquidity buffer as share of deposits","unit":"% of deposits"},"liquidity_yield":{"description":"Return on liquidity (central bank, government bonds)","unit":"%/yr"},"fee_rate":{"description":"Net fee income as share of average portfolio","unit":"%/yr"},"fixed_opex":{"description":"Fixed operating costs per year (years 1-5)","unit":"EUR m"},"cac_rate":{"description":"Customer acquisition cost as share of originations","unit":"% of originations"},"servicing_rate":{"description":"Servicing cost as share of average portfolio","unit":"%/yr"},"other_assets":{"description":"Other tangible assets (equipment, receivables), 100% risk weight","unit":"EUR m"},"tax_rate":{"description":"Tax rate on profit after loss carry-forward","unit":"%"},"risk_weight_loans":{"description":"Risk weight for retail consumer loans","unit":"%"},"op_risk_bic_coefficient":{"description":"Business indicator component coefficient (BI up to EUR 1bn)","unit":"% of BI"},"op_risk_ildc_cap":{"description":"Cap on net interest in the ILDC, as share of interest-earning assets","unit":"% of interest-earning assets"},"capital_requirement":{"description":"Total capital requirement incl. buffers, % of RWA","unit":"% of RWA"},"management_buffer":{"description":"Internal buffer above requirement","unit":"% of RWA"}}}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="model.js"></script>
+<script>
+(function () {
+  "use strict";
+  var M = window.BankModel;
+  var MINUS = "−";
+
+  // ---- Driver definitions --------------------------------------------------------------
+  // kind "pct": the model input is a decimal, the slider works in percent.
+  // kind "money": EUR m. kind "scale": a factor applied to the scenario's 5-year path.
+  var SLIDERS = [
+    { group: "Capital" },
+    { key: "initial_capital", label: "Initial capital", kind: "money", min: 10, max: 80, step: 1 },
+    { key: "capital_injection_year3", label: "Capital injection in year 3", kind: "money", min: 0, max: 30, step: 0.5 },
+    { key: "capital_requirement", label: "Capital requirement", kind: "pct", min: 10, max: 20, step: 0.5, hint: "Pillar 1 + Pillar 2 + buffers, % of RWA" },
+    { key: "management_buffer", label: "Management buffer", kind: "pct", min: 0, max: 5, step: 0.5, hint: "Internal buffer above the requirement" },
+    { group: "Growth and pricing" },
+    { key: "originations_scale", path: "originations", label: "Originations", kind: "scale", min: 50, max: 150, step: 5, hint: "Scales the 5-year origination plan" },
+    { key: "loan_yield", label: "Loan yield", kind: "pct", min: 6, max: 18, step: 0.1 },
+    { key: "fee_rate", label: "Fee income (% of loans)", kind: "pct", min: 0, max: 3, step: 0.1 },
+    { key: "deposit_rate", label: "Deposit rate", kind: "pct", min: 0.5, max: 6, step: 0.05 },
+    { group: "Credit risk" },
+    { key: "cost_of_risk", label: "Write-off rate (cost of risk)", kind: "pct", min: 0.5, max: 8, step: 0.1, hint: "Realised losses, % of average gross loans" },
+    { key: "allowance_coverage", label: "Allowance coverage", kind: "pct", min: 0, max: 4, step: 0.1, hint: "IFRS 9 allowance, % of gross loans" },
+    { group: "Costs" },
+    { key: "cac_rate", label: "Acquisition cost (% of originations)", kind: "pct", min: 0, max: 6, step: 0.1 },
+    { key: "fixed_opex_scale", path: "fixed_opex", label: "Fixed opex", kind: "scale", min: 50, max: 150, step: 5, hint: "Scales the 5-year fixed cost plan" }
+  ];
+  var DEFAULT_TARGETS = { roe: 10, profitBy: 5 };
+
+  var data = null;          // assumptions.json
+  var scenarioKey = "base"; // scenario the sliders were loaded from
+  var inputs = null;        // full model inputs of that scenario (copied)
+  var drivers = {};         // current slider state, in model units (decimals, EUR m, scale factors)
+  var targets = { capital: null, capitalLinked: true, roe: DEFAULT_TARGETS.roe, profitBy: DEFAULT_TARGETS.profitBy };
+  var baseResult = null;
+  var charts = {};
+
+  // ---- Formatting -----------------------------------------------------------------------
+  function signed(v, s) { return (v < 0 ? MINUS : "") + s; }
+  function money(v, dp) { dp = dp === undefined ? 1 : dp; return signed(v, "€" + Math.abs(v).toFixed(dp) + "m"); }
+  function pct(v, dp) { dp = dp === undefined ? 1 : dp; return signed(v, Math.abs(v * 100).toFixed(dp) + "%"); }
+  function num(v, dp) { return signed(v, Math.abs(v).toFixed(dp)); }
+  function plusMinus(v, s) { return (v > 0 ? "+" : v < 0 ? MINUS : "±") + s; }
+  function round(v, dp) { var f = Math.pow(10, dp); return Math.round(v * f) / f; }
+  function fromPercent(v) { return parseFloat((v / 100).toPrecision(12)); }
+  function sameNumber(a, b) { return Math.abs(a - b) < 1e-12; }
+
+  // ---- Build model inputs from the scenario plus slider state ---------------------------
+  function currentInputs() {
+    var a = {};
+    for (var k in inputs) a[k] = Array.isArray(inputs[k]) ? inputs[k].slice() : inputs[k];
+    SLIDERS.forEach(function (s) {
+      if (!s.key) return;
+      if (s.kind === "scale") {
+        var f = drivers[s.key];
+        a[s.path] = inputs[s.path].map(function (v) { return v * f; });
+      } else {
+        a[s.key] = drivers[s.key];
+      }
+    });
+    return a;
+  }
+
+  function loadScenario(key) {
+    scenarioKey = key;
+    var src = data.scenarios[key].inputs;
+    inputs = JSON.parse(JSON.stringify(src));
+    drivers = {};
+    SLIDERS.forEach(function (s) {
+      if (!s.key) return;
+      drivers[s.key] = s.kind === "scale" ? 1 : inputs[s.key];
+    });
+    document.querySelectorAll("[data-scenario]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-scenario") === key));
+    });
+    syncSliders();
+    update();
+  }
+
+  // ---- Sliders --------------------------------------------------------------------------
+  function sliderToModel(s, v) { return s.kind === "pct" || s.kind === "scale" ? fromPercent(v) : v; }
+  function modelToSlider(s, v) { return s.kind === "pct" || s.kind === "scale" ? round(v * 100, 4) : v; }
+
+  function readout(s, v) {
+    if (s.kind === "pct") return pct(v, s.step < 0.1 ? 2 : 1);
+    if (s.kind === "money") return money(v, s.step < 1 ? 1 : 0);
+    var total = M.pySum(inputs[s.path]) * v;
+    return Math.round(v * 100) + "% · " + money(total, 0) + " / 5 yrs";
+  }
+
+  function buildSliders() {
+    var host = document.getElementById("sliders");
+    SLIDERS.forEach(function (s) {
+      if (s.group) {
+        var g = document.createElement("div");
+        g.className = "group-title";
+        g.textContent = s.group;
+        host.appendChild(g);
+        return;
+      }
+      var id = "s-" + s.key;
+      var wrap = document.createElement("div");
+      wrap.className = "slider";
+      wrap.innerHTML =
+        '<div class="row"><label for="' + id + '">' + s.label + '</label>' +
+        '<output for="' + id + '" id="' + id + '-out"></output></div>' +
+        '<input type="range" id="' + id + '" min="' + s.min + '" max="' + s.max + '" step="' + s.step + '"' +
+        (s.hint ? ' aria-describedby="' + id + '-hint"' : "") + '>' +
+        (s.hint ? '<div class="hint" id="' + id + '-hint">' + s.hint + '</div>' : "");
+      host.appendChild(wrap);
+      var el = wrap.querySelector("input");
+      el.addEventListener("input", function () {
+        drivers[s.key] = sliderToModel(s, parseFloat(el.value));
+        paintSlider(s);
+        update();
+      });
+    });
+  }
+
+  function scenarioDefault(s) { return s.kind === "scale" ? 1 : inputs[s.key]; }
+
+  function paintSlider(s) {
+    var el = document.getElementById("s-" + s.key);
+    var out = document.getElementById("s-" + s.key + "-out");
+    var text = readout(s, drivers[s.key]);
+    out.textContent = text;
+    out.classList.toggle("changed", !sameNumber(drivers[s.key], scenarioDefault(s)));
+    el.setAttribute("aria-valuetext", text);
+  }
+
+  function syncSliders() {
+    SLIDERS.forEach(function (s) {
+      if (!s.key) return;
+      document.getElementById("s-" + s.key).value = modelToSlider(s, drivers[s.key]);
+      paintSlider(s);
+    });
+  }
+
+  // ---- Targets --------------------------------------------------------------------------
+  function modelTarget() { return drivers.capital_requirement + drivers.management_buffer; }
+  function capitalTarget() { return targets.capitalLinked ? modelTarget() : targets.capital; }
+
+  function syncTargets() {
+    var tc = document.getElementById("t-capital");
+    if (targets.capitalLinked && document.activeElement !== tc) tc.value = round(modelTarget() * 100, 2);
+    document.getElementById("t-roe").value = targets.roe;
+    document.getElementById("t-profit").value = String(targets.profitBy);
+    document.getElementById("t-capital-note").textContent = targets.capitalLinked
+      ? "Capital target follows requirement + management buffer. Type a value to set your own."
+      : "Own capital target set; the model's target (requirement + buffer) is " + pct(modelTarget()) + ".";
+  }
+
+  function bindTargets() {
+    var tc = document.getElementById("t-capital");
+    tc.addEventListener("input", function () {
+      var v = parseFloat(tc.value);
+      if (!isFinite(v)) return;
+      var t = fromPercent(v);
+      targets.capitalLinked = sameNumber(t, modelTarget());
+      targets.capital = t;
+      update();
+    });
+    var tr = document.getElementById("t-roe");
+    tr.addEventListener("input", function () {
+      var v = parseFloat(tr.value);
+      if (!isFinite(v)) return;
+      targets.roe = v;
+      update();
+    });
+    document.getElementById("t-profit").addEventListener("change", function (e) {
+      targets.profitBy = parseInt(e.target.value, 10);
+      update();
+    });
+  }
+
+  // ---- Results --------------------------------------------------------------------------
+  function evaluate(years) {
+    var s = M.summary(years);
+    var tgt = capitalTarget();
+    // Extra capital needed = the largest shortfall in any year. With the target linked this is
+    // exactly the model's capital_surplus; with an own target it uses the same formula.
+    var surplusT = targets.capitalLinked ? s.max_capital_shortfall
+      : Math.min.apply(null, years.map(function (y) { return y.equity_close - tgt * y.rwa; }));
+    return {
+      years: years,
+      s: s,
+      extraTarget: Math.max(0, -surplusT),
+      extraRequirement: Math.max(0, -s.max_requirement_shortfall),
+      belowTarget: years.filter(function (y) { return y.capital_ratio < tgt - 1e-12; }).map(function (y) { return y.year; }),
+      belowReq: years.filter(function (y) { return y.requirement_surplus < 0; }).map(function (y) { return y.year; })
+    };
+  }
+
+  function yearsText(list) {
+    if (list.length === 1) return "year " + list[0];
+    var contiguous = list.every(function (v, i) { return i === 0 || v === list[i - 1] + 1; });
+    return contiguous ? "years " + list[0] + "–" + list[list.length - 1] : "years " + list.join(", ");
+  }
+
+  function kpiTiles(r, b) {
+    var s = r.s, bs = b.s, last = r.years[r.years.length - 1];
+    var tgt = capitalTarget();
+    var fp = s.first_profitable_year, bfp = bs.first_profitable_year;
+    var fpDelta;
+    if (fp === bfp) fpDelta = "same as base";
+    else if (fp === null) fpDelta = "base: year " + bfp;
+    else if (bfp === null) fpDelta = "base: none in 5 years";
+    else fpDelta = plusMinus(fp - bfp, Math.abs(fp - bfp) + (Math.abs(fp - bfp) === 1 ? " year" : " years")) + " vs base";
+
+    function dMoney(v, bv) { var d = round(v, 1) - round(bv, 1); return Math.abs(d) < 0.05 ? "same as base" : plusMinus(d, "€" + Math.abs(d).toFixed(1) + "m") + " vs base"; }
+    function dPp(v, bv) { var d = round(v * 100, 1) - round(bv * 100, 1); return Math.abs(d) < 0.05 ? "same as base" : plusMinus(d, Math.abs(d).toFixed(1) + " pp") + " vs base"; }
+
+    var roeOk = s.roe_last_year * 100 >= targets.roe - 1e-9;
+    var capOk = r.belowTarget.length === 0;
+    var fpOk = fp !== null && fp <= targets.profitBy;
+
+    return [
+      { name: "First profitable year", value: fp === null ? "None" : "Year " + fp, delta: fpDelta,
+        ok: fpOk,
+        reason: fp === null ? "Missed: no profit within 5 years (target: by year " + targets.profitBy + ")"
+          : fpOk ? "Met: profit by year " + targets.profitBy
+          : "Missed: profit only in year " + fp + ", target year " + targets.profitBy },
+      { name: "Cumulative net profit, 5 years", value: money(s.cumulative_net_profit), delta: dMoney(s.cumulative_net_profit, bs.cumulative_net_profit) },
+      { name: "ROE, year 5", value: pct(s.roe_last_year), delta: dPp(s.roe_last_year, bs.roe_last_year),
+        ok: roeOk,
+        reason: (roeOk ? "Met: " : "Missed: ") + (roeOk ? "at least " : "below ") + num(targets.roe, 1) + "% target" },
+      { name: "Cost / income, year 5", value: pct(s.cost_income_last_year, 0), delta: dPp(s.cost_income_last_year, bs.cost_income_last_year) },
+      { name: "Lowest capital ratio", value: pct(s.min_capital_ratio), delta: dPp(s.min_capital_ratio, bs.min_capital_ratio),
+        ok: capOk,
+        reason: capOk ? "Met: at least " + pct(tgt) + " in every year"
+          : "Missed: below " + pct(tgt) + " in " + yearsText(r.belowTarget) },
+      { name: "Extra capital to stay above " + pct(tgt) + " target", value: r.extraTarget > 0 ? money(r.extraTarget) : "None",
+        delta: dMoney(r.extraTarget, b.extraTarget),
+        ok: r.extraTarget <= 0,
+        reason: r.extraTarget > 0 ? "Missed: shortfall of " + money(r.extraTarget) + " at the worst year" : "Met: no shortfall in any year" },
+      { name: "Extra capital to stay above " + pct(drivers.capital_requirement) + " requirement", value: r.extraRequirement > 0 ? money(r.extraRequirement) : "None",
+        delta: dMoney(r.extraRequirement, b.extraRequirement),
+        ok: r.extraRequirement <= 0,
+        reason: r.extraRequirement > 0 ? "Missed: breaches the minimum in " + yearsText(r.belowReq) : "Met: requirement held every year" },
+      { name: "Net loan book, year 5", value: money(last.closing_loans, 0), delta: dMoney(last.closing_loans, b.years[4].closing_loans) }
+    ];
+  }
+
+  function renderKpis(tiles) {
+    var host = document.getElementById("kpis");
+    host.innerHTML = "";
+    tiles.forEach(function (t) {
+      var d = document.createElement("div");
+      d.className = "kpi" + (t.ok === undefined ? "" : t.ok ? " good" : " bad");
+      d.innerHTML = '<div class="name"></div><div class="value"></div><div class="delta"></div>' +
+        (t.reason ? '<div class="status"></div>' : "");
+      d.querySelector(".name").textContent = t.name;
+      d.querySelector(".value").textContent = t.value;
+      d.querySelector(".delta").textContent = t.delta;
+      if (t.reason) d.querySelector(".status").textContent = t.reason;
+      host.appendChild(d);
+    });
+  }
+
+  function setChartStatus(id, ok, text) {
+    var card = document.getElementById("card-" + id);
+    card.classList.toggle("good", ok);
+    card.classList.toggle("bad", !ok);
+    document.getElementById("status-" + id).textContent = text;
+  }
+
+  function renderTable(r) {
+    var tgt = capitalTarget();
+    var Y = r.years;
+    var rows = [
+      ["Balance sheet"],
+      ["Net loans", function (y) { return num(y.closing_loans, 1); }],
+      ["Deposits", function (y) { return num(y.deposits, 1); }],
+      ["Liquidity", function (y) { return num(y.liquidity, 1); }],
+      ["Equity", function (y) { return num(y.equity_close, 1); }],
+      ["P&L"],
+      ["Total income", function (y) { return num(y.total_income, 2); }],
+      ["Operating costs", function (y) { return num(y.opex, 2); }],
+      ["Impairment charge", function (y) { return num(y.impairment_charge, 2); }],
+      ["Net profit", function (y) { return num(y.net_profit, 2); }],
+      ["Capital and ratios"],
+      ["Risk-weighted assets", function (y) { return num(y.rwa, 1); }],
+      ["Capital ratio", function (y) { return pct(y.capital_ratio) + (y.capital_ratio < tgt - 1e-12 ? " ↓" : ""); },
+        function (y) { return y.capital_ratio < tgt - 1e-12; }],
+      ["ROE", function (y) { return pct(y.roe); }],
+      ["Cost / income", function (y) { return pct(y.cost_income, 0); }],
+      ["Cost of risk (all-in)", function (y) { return pct(y.cost_of_risk_actual, 2); }],
+      ["NIM", function (y) { return pct(y.nim, 2); }]
+    ];
+    var html = "<caption class=\"sr-only\">Year-by-year results</caption><thead><tr><th scope=\"col\">Item</th>" +
+      Y.map(function (y) { return "<th scope=\"col\">Year " + y.year + "</th>"; }).join("") + "</tr></thead><tbody>";
+    rows.forEach(function (row) {
+      if (row.length === 1) { html += "<tr class=\"section\"><td colspan=\"" + (Y.length + 1) + "\">" + row[0] + "</td></tr>"; return; }
+      html += "<tr><th scope=\"row\" style=\"font-weight:400\">" + row[0] + "</th>" + Y.map(function (y) {
+        var miss = row[2] && row[2](y);
+        return "<td" + (miss ? " class=\"miss\"" : "") + ">" + row[1](y) + "</td>";
+      }).join("") + "</tr>";
+    });
+    document.getElementById("table").innerHTML = html + "</tbody>";
+    document.getElementById("table-note").textContent =
+      "↓ = capital ratio below the " + pct(tgt) + " target. Costs and impairment are shown as negative numbers.";
+  }
+
+  // ---- Charts ---------------------------------------------------------------------------
+  function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+  function initCharts() {
+    if (!window.Chart) { document.getElementById("charts").classList.add("no-charts"); return; }
+    var labels = ["Y1", "Y2", "Y3", "Y4", "Y5"];
+    var common = function (fmt) {
+      return {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { position: "bottom", labels: { boxWidth: 12, boxHeight: 12, filter: function (item, d) { return !d.datasets[item.datasetIndex].hidden; } } },
+          tooltip: { callbacks: { label: function (c) { var v = c.dataset.trueValues ? c.dataset.trueValues[c.dataIndex] : c.parsed.y; return c.dataset.label + ": " + fmt(v); } } }
+        },
+        scales: { x: { grid: { display: false } }, y: { ticks: { callback: function (v) { return fmt(v); } } } }
+      };
+    };
+    var moneyTick = function (v) { return money(v, Math.abs(v) < 10 ? 1 : 0); };
+    var pctTick = function (v) { return pct(v, 0); };
+
+    charts.profit = new Chart(document.getElementById("chart-profit"), {
+      type: "bar",
+      data: { labels: labels, datasets: [
+        { label: "Net profit", data: [], borderRadius: 3 },
+        { label: "Base case", data: [], borderWidth: 1.5, borderDash: [4, 3] }
+      ] },
+      options: common(moneyTick)
+    });
+    var capOpts = common(function (v) { return pct(v, 1); });
+    capOpts.scales.y.ticks.callback = pctTick;
+    capOpts.scales.y.suggestedMin = 0;
+    capOpts.layout = { padding: { top: 8 } };
+    charts.capital = new Chart(document.getElementById("chart-capital"), {
+      type: "line",
+      data: { labels: labels, datasets: [
+        { label: "Capital ratio", data: [], borderWidth: 2.5, pointRadius: 5, pointHoverRadius: 6, tension: 0, clip: false },
+        { label: "Base case", data: [], borderWidth: 1.5, borderDash: [4, 3], pointRadius: 0 },
+        { label: "Requirement", data: [], borderWidth: 1.5, pointRadius: 0 },
+        { label: "Target", data: [], borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0 }
+      ] },
+      options: capOpts
+    });
+    charts.balance = new Chart(document.getElementById("chart-balance"), {
+      type: "bar",
+      data: { labels: labels, datasets: [
+        { label: "Net loans", data: [], borderRadius: 3 },
+        { label: "Deposits", data: [], borderRadius: 3 }
+      ] },
+      options: common(moneyTick)
+    });
+    applyChartTheme();
+  }
+
+  function applyChartTheme() {
+    if (!window.Chart || !charts.profit) return;
+    Chart.defaults.color = css("--muted");
+    Chart.defaults.borderColor = css("--grid");
+    Object.keys(charts).forEach(function (k) {
+      var c = charts[k];
+      c.options.plugins.legend.labels.color = css("--muted");
+      c.options.scales.x.ticks.color = css("--muted");
+      c.options.scales.y.ticks.color = css("--muted");
+      c.options.scales.y.grid.color = css("--grid");
+    });
+    var base = css("--series-base");
+    charts.profit.data.datasets[1].backgroundColor = "transparent";
+    charts.profit.data.datasets[1].borderColor = base;
+    charts.capital.data.datasets[1].borderColor = base;
+    charts.capital.data.datasets[2].borderColor = css("--line-req");
+    charts.capital.data.datasets[3].borderColor = css("--line-target");
+    charts.capital.data.datasets[0].borderColor = css("--series-1");
+    charts.balance.data.datasets[0].backgroundColor = css("--series-1");
+    charts.balance.data.datasets[1].backgroundColor = css("--series-2");
+    if (lastRender) renderCharts(lastRender.r, lastRender.b);
+  }
+
+  var lastRender = null;
+  function renderCharts(r, b) {
+    lastRender = { r: r, b: b };
+    if (!charts.profit) return;
+    var good = css("--good"), bad = css("--bad");
+    var modified = !isBaseUnchanged();
+    var tgt = capitalTarget();
+    var P = charts.profit.data.datasets;
+    P[0].data = r.years.map(function (y) { return y.net_profit; });
+    P[0].backgroundColor = r.years.map(function (y) { return y.net_profit > 0 ? good : bad; });
+    P[1].data = modified ? b.years.map(function (y) { return y.net_profit; }) : [];
+    P[1].hidden = !modified;
+    charts.profit.update();
+
+    // A new bank starts with a very high ratio (little RWA). Cap the axis so the requirement and
+    // target lines stay readable; capped points are drawn as triangles at the top edge.
+    var CAP = 0.5;
+    var ratios = r.years.map(function (y) { return y.capital_ratio; });
+    var clipped = r.years.filter(function (y) { return y.capital_ratio > CAP; }).map(function (y) { return y.year; });
+    var C = charts.capital.data.datasets;
+    charts.capital.options.scales.y.max = clipped.length || (modified && b.years.some(function (y) { return y.capital_ratio > CAP; })) ? CAP : undefined;
+    C[0].trueValues = ratios;
+    C[0].data = ratios.map(function (v) { return Math.min(v, CAP); });
+    C[0].pointStyle = ratios.map(function (v) { return v > CAP ? "triangle" : "circle"; });
+    document.getElementById("note-capital").textContent = clipped.length
+      ? "Off scale: " + yearsText(clipped) + " (" + clipped.map(function (yr) { return pct(ratios[yr - 1], 0); }).join(", ") + "), drawn at the top edge."
+      : "";
+    C[0].pointBackgroundColor = r.years.map(function (y) { return y.capital_ratio < tgt - 1e-12 ? bad : good; });
+    C[0].pointBorderColor = C[0].pointBackgroundColor;
+    C[1].trueValues = b.years.map(function (y) { return y.capital_ratio; });
+    C[1].data = modified ? C[1].trueValues.map(function (v) { return Math.min(v, CAP); }) : [];
+    C[1].hidden = !modified;
+    C[2].label = "Requirement " + pct(drivers.capital_requirement);
+    C[2].data = r.years.map(function () { return drivers.capital_requirement; });
+    C[3].label = "Target " + pct(tgt);
+    C[3].data = r.years.map(function () { return tgt; });
+    charts.capital.update();
+
+    var B = charts.balance.data.datasets;
+    B[0].data = r.years.map(function (y) { return y.closing_loans; });
+    B[1].data = r.years.map(function (y) { return y.deposits; });
+    charts.balance.update();
+  }
+
+  function isBaseUnchanged() {
+    if (scenarioKey !== "base") return false;
+    return SLIDERS.every(function (s) { return !s.key || sameNumber(drivers[s.key], scenarioDefault(s)); });
+  }
+
+  // ---- Main update ----------------------------------------------------------------------
+  function update() {
+    syncTargets();
+    var r = evaluate(M.project(currentInputs(), data.years));
+    var b = evaluate(baseResult);
+    var tiles = kpiTiles(r, b);
+    renderKpis(tiles);
+
+    var fpTile = tiles[0], capTile = tiles[4];
+    setChartStatus("profit", fpTile.ok, fpTile.reason);
+    setChartStatus("capital", capTile.ok, capTile.reason);
+    renderCharts(r, b);
+    renderTable(r);
+
+    var changed = SLIDERS.some(function (s) { return s.key && !sameNumber(drivers[s.key], scenarioDefault(s)); });
+    document.getElementById("state-note").textContent =
+      data.scenarios[scenarioKey].label + " case" + (changed ? ", modified" : "") + "; deltas compare with the base case";
+  }
+
+  function init(json) {
+    data = json;
+    baseResult = M.project(data.scenarios.base.inputs, data.years);
+    inputs = data.scenarios.base.inputs;
+    buildSliders();
+    bindTargets();
+    initCharts();
+    document.querySelectorAll("[data-scenario]").forEach(function (btn) {
+      btn.addEventListener("click", function () { loadScenario(btn.getAttribute("data-scenario")); });
+    });
+    document.getElementById("reset").addEventListener("click", function () {
+      targets = { capital: null, capitalLinked: true, roe: DEFAULT_TARGETS.roe, profitBy: DEFAULT_TARGETS.profitBy };
+      loadScenario("base");
+    });
+    if (window.matchMedia) {
+      var mq = window.matchMedia("(prefers-color-scheme: dark)");
+      var onTheme = function () { applyChartTheme(); };
+      if (mq.addEventListener) mq.addEventListener("change", onTheme); else if (mq.addListener) mq.addListener(onTheme);
+    }
+    loadScenario("base");
+  }
+
+  function fallback() {
+    return JSON.parse(document.getElementById("assumptions-fallback").textContent);
+  }
+
+  function start() {
+    if (!M) {
+      var e = document.getElementById("load-error");
+      e.style.display = "block";
+      e.textContent = "model.js could not be loaded, so the calculator cannot run.";
+      return;
+    }
+    var useFallback = function () { init(fallback()); };
+    if (location.protocol === "file:" || !window.fetch) { useFallback(); return; }
+    fetch("assumptions.json", { cache: "no-cache" })
+      .then(function (res) { if (!res.ok) throw new Error(res.status); return res.json(); })
+      .then(init, useFallback);
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>
