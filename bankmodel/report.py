@@ -19,14 +19,16 @@ PCT = '0.0%;(0.0%);"-"'
 # (attribute, label, format) in display order; None attribute = section header
 LINES = [
     (None, "LOAN BOOK", None),
-    ("opening_loans", "Opening loans", EUR),
+    ("opening_gross_loans", "Opening gross loans", EUR),
     ("originations", "New loans", EUR),
     ("repayments", "Repayments", EUR),
-    ("credit_losses", "Credit losses", EUR),
-    ("closing_loans", "Closing loans", EUR),
+    ("write_offs", "Write-offs", EUR),
+    ("closing_gross_loans", "Closing gross loans", EUR),
+    ("allowance_close", "Loss allowance (IFRS 9)", EUR),
+    ("closing_loans", "Net loans", EUR),
     (None, "BALANCE SHEET", None),
     ("liquidity", "Liquidity", EUR),
-    ("other_assets", "Other assets", EUR),
+    ("other_assets", "Other tangible assets", EUR),
     ("total_assets", "Total assets", EUR),
     ("deposits", "Customer deposits", EUR),
     ("equity_close", "Equity", EUR),
@@ -39,20 +41,25 @@ LINES = [
     ("fees", "Net fees", EUR),
     ("total_income", "Total income", EUR),
     ("opex", "Operating expenses", EUR),
-    ("credit_losses", "Credit losses", EUR),
+    ("impairment_charge", "Impairment charge (write-offs + allowance change)", EUR),
     ("pbt", "Profit before tax", EUR),
     ("tax", "Tax", EUR),
     ("net_profit", "Net profit", EUR),
     (None, "CAPITAL", None),
+    ("business_indicator", "Business indicator (3-year average)", EUR),
+    ("rwa_credit", "RWA: credit risk", EUR),
+    ("rwa_other", "RWA: other assets", EUR),
+    ("rwa_operational", "RWA: operational risk", EUR),
     ("rwa", "Risk-weighted assets", EUR),
     ("capital_ratio", "Capital ratio", PCT),
     ("capital_target", "Capital target", PCT),
     ("capital_surplus", "Surplus / (shortfall) vs target", EUR),
+    ("requirement_surplus", "Surplus / (shortfall) vs requirement", EUR),
     ("leverage_ratio", "Leverage ratio", PCT),
     (None, "KPIs", None),
     ("nim", "Net interest margin", PCT),
     ("cost_income", "Cost / income", PCT),
-    ("cost_of_risk_actual", "Cost of risk (actual)", PCT),
+    ("cost_of_risk_actual", "Cost of risk (impairment charge / avg loans)", PCT),
     ("roe", "Return on equity", PCT),
     ("loan_to_deposit", "Loans / deposits", PCT),
 ]
@@ -72,15 +79,19 @@ def write_excel(results: list[ScenarioResult], sens: list[dict], path: Path) -> 
     for c in ws[1]:
         c.font, c.fill = hdr_font, hdr_fill
     keys = [
-        ("loans_end", "Loans, end of year 5", EUR),
+        ("loans_end", "Net loans, end of year 5", EUR),
+        ("total_assets_end", "Total assets, end of year 5", EUR),
         ("deposits_end", "Deposits, end of year 5", EUR),
         ("net_profit_last_year", "Net profit, year 5", EUR),
         ("cumulative_net_profit", "Cumulative net profit, 5 years", EUR),
         ("first_profitable_year", "First profitable year", "0"),
         ("roe_last_year", "ROE, year 5", PCT),
         ("cost_income_last_year", "Cost / income, year 5", PCT),
+        ("cost_of_risk_last_year", "Cost of risk (all-in), year 5", PCT),
+        ("nim_last_year", "Net interest margin, year 5", PCT),
         ("min_capital_ratio", "Lowest capital ratio", PCT),
-        ("max_capital_shortfall", "Largest capital shortfall (negative = short)", EUR),
+        ("max_capital_shortfall", "Lowest surplus / (shortfall) vs target", EUR),
+        ("max_requirement_shortfall", "Lowest surplus / (shortfall) vs requirement", EUR),
     ]
     summaries = [r.summary() for r in results]
     for k, label, fmt in keys:
@@ -108,7 +119,7 @@ def write_excel(results: list[ScenarioResult], sens: list[dict], path: Path) -> 
             ws.append([label] + [getattr(y, attr) for y in r.years])
             for c in ws[ws.max_row][1:]:
                 c.number_format = fmt
-        ws.column_dimensions["A"].width = 36
+        ws.column_dimensions["A"].width = 48
         for col in "BCDEF":
             ws.column_dimensions[col].width = 12
 
@@ -210,8 +221,10 @@ def write_markdown(results: list[ScenarioResult], sens: list[dict], path: Path) 
         ("First profitable year", "first_profitable_year", "int"),
         ("ROE, year 5", "roe_last_year", "pct"),
         ("Cost / income, year 5", "cost_income_last_year", "pct"),
+        ("Cost of risk (all-in impairment charge), year 5", "cost_of_risk_last_year", "pct"),
         ("Lowest capital ratio", "min_capital_ratio", "pct"),
-        ("Largest capital shortfall (EUR m)", "max_capital_shortfall", "num"),
+        ("Lowest surplus / (shortfall) vs target (EUR m)", "max_capital_shortfall", "num"),
+        ("Lowest surplus / (shortfall) vs requirement (EUR m)", "max_requirement_shortfall", "num"),
     ]
     lines = ["# Results summary", "", "| Metric | " + " | ".join(labels) + " |", "|---|" + "---|" * len(labels)]
     for label, key, kind in rows:

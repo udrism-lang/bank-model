@@ -1,4 +1,4 @@
-# Assumptions for a deposit-funded digital consumer lender ("Bank X").
+# Assumptions for a new digital consumer lender ("Bank X"), funded by deposits from year 2.
 # All amounts in EUR millions; rates as decimals (0.11 = 11%).
 # Each assumption has a value per scenario. Change values here, then run: python run.py
 
@@ -62,17 +62,22 @@ assumptions:
     stress: 0.15
 
   cost_of_risk:
-    description: Annual credit losses as share of average portfolio
+    description: Write-offs (realised credit losses) as share of average gross loans
     unit: "%/yr"
-    source: Inbank 2025 1.59%; unsecured consumer credit typically 1.5-4%
+    source: >-
+      Unsecured consumer credit typically 1.5-4%. This is the write-off rate only; the
+      all-in impairment charge also includes the allowance build (KPI "cost of risk").
+      Inbank's 1.59% (2025) is an all-in impairment charge.
     base: 0.02
     optimistic: 0.015
     stress: 0.04
 
-  day1_provision:
-    description: Upfront provision on new loans (IFRS 9 stage 1)
-    unit: "% of originations"
-    source: 12-month expected loss booked at origination
+  allowance_coverage:
+    description: IFRS 9 loss allowance as share of closing gross loans
+    unit: "% of gross loans"
+    source: >-
+      12-month expected-loss allowance (mostly stage 1). P&L charge = write-offs +
+      change in allowance, so the allowance builds while the book grows.
     base: 0.01
     optimistic: 0.008
     stress: 0.015
@@ -134,9 +139,11 @@ assumptions:
     stress: 0.010
 
   other_assets:
-    description: Fixed and other assets (IT, equipment)
+    description: Other tangible assets (equipment, receivables), 100% risk weight
     unit: EUR m
-    source: Simplified constant
+    source: >-
+      Simplified constant. Capitalised software would in practice be an intangible
+      asset deducted from CET1, not a 100%-weighted asset; the model ignores this.
     base: 4
     optimistic: 4
     stress: 4
@@ -157,13 +164,25 @@ assumptions:
     optimistic: 0.75
     stress: 0.75
 
-  op_risk_multiplier:
-    description: Operational risk RWA as multiple of total income
-    unit: x
-    source: CRR3 business indicator component 12% x 12.5
-    base: 1.5
-    optimistic: 1.5
-    stress: 1.5
+  op_risk_bic_coefficient:
+    description: Business indicator component coefficient (BI up to EUR 1bn)
+    unit: "% of BI"
+    source: >-
+      CRR Art. 312-313 as amended by Regulation (EU) 2024/1623 (CRR3). Op-risk RWA =
+      12.5 x 12% x BI; BI = 3-year average of ILDC + services + financial component.
+    base: 0.12
+    optimistic: 0.12
+    stress: 0.12
+
+  op_risk_ildc_cap:
+    description: Cap on net interest in the ILDC, as share of interest-earning assets
+    unit: "% of interest-earning assets"
+    source: >-
+      CRR Art. 314(2) as amended by Regulation (EU) 2024/1623: ILDC = min(|interest
+      income - interest expense|, 2.25% x interest-earning assets) + dividend income.
+    base: 0.0225
+    optimistic: 0.0225
+    stress: 0.0225
 
   capital_requirement:
     description: Total capital requirement incl. buffers, % of RWA

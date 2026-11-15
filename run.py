@@ -15,7 +15,7 @@ from bankmodel.sensitivity import sensitivity
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Five-year model for a deposit-funded digital consumer lender")
+    parser = argparse.ArgumentParser(description="Five-year model for a new digital consumer lender")
     parser.add_argument("--assumptions", default="assumptions.yaml", help="Path to assumptions YAML")
     parser.add_argument("--out", default="output", help="Output folder")
     args = parser.parse_args()

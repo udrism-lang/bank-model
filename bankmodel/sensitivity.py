@@ -9,7 +9,7 @@ from .model import Assumptions, project
 DRIVERS: dict[str, tuple[str, float, str]] = {
     # key: (label, shock, mode)  mode "abs" = +/- shock in rate points, "rel" = +/- shock as % of value
     "loan_yield": ("Loan yield +/-1pp", 0.01, "abs"),
-    "cost_of_risk": ("Cost of risk +/-1pp", 0.01, "abs"),
+    "cost_of_risk": ("Write-off rate +/-1pp", 0.01, "abs"),
     "deposit_rate": ("Deposit rate +/-0.5pp", 0.005, "abs"),
     "liquidity_ratio": ("Liquidity buffer +/-5pp", 0.05, "abs"),
     "cac_rate": ("Acquisition cost +/-1pp", 0.01, "abs"),
